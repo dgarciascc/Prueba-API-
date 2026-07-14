@@ -7,6 +7,10 @@ app.get('/health', (req, res) => {
   res.status(500).json({ status: 'ok cambio 200' });
 });
 
+app.get('/health2', (req, res) => {
+  res.status(200).json({ status: 'ok cambio 200' });
+});
+
 app.listen(PORT, () => {
   console.log(`API running is running`);
 });
