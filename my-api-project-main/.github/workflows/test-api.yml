@@ -1,0 +1,48 @@
+
+name: Run API Tests with Postman
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  run-postman-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias del proyecto
+        run: npm install
+
+      - name: Levantar servidor Node.js en background
+        run: |
+          nohup npm start > server.log 2>&1 &
+          sleep 5  # Espera que el servidor levante
+
+      - name: Install Newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Run Postman Collection
+        run: |
+          newman run ./postman/my-collection.json  --environment ./postman/my-environment.json  --reporters cli,htmlextra  --reporter-htmlextra-export report-test.html   
+
+      - name: Subir HTML como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: report-test.html
+
+      - name: Ver logs del servidor si falla
+        if: failure()
+        run: cat server.log
